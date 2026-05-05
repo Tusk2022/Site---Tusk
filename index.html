@@ -1394,18 +1394,39 @@
     if (barsSection) barObs.observe(barsSection);
 
     /* ── CONTACT FORM ────────────────────────────────────────────── */
-    function handleForm(e) {
+    async function handleForm(e) {
       e.preventDefault();
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.innerHTML = '<i class="fas fa-check"></i> Mensagem Enviada!';
-      btn.style.borderColor = 'var(--green)';
-      btn.style.color = 'var(--green)';
-      setTimeout(() => {
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensagem';
-        btn.style.borderColor = '';
-        btn.style.color = '';
-        e.target.reset();
-      }, 3000);
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+      try {
+        const res = await fetch('https://formspree.io/f/xqenqopb', {
+          method: 'POST',
+          body: new FormData(e.target),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          btn.innerHTML = '<i class="fas fa-check"></i> Mensagem Enviada!';
+          btn.style.borderColor = 'var(--green)';
+          btn.style.color = 'var(--green)';
+          e.target.reset();
+        } else {
+          throw new Error();
+        }
+      } catch {
+        btn.innerHTML = '<i class="fas fa-times"></i> Erro ao enviar';
+        btn.style.borderColor = 'var(--magenta)';
+        btn.style.color = 'var(--magenta)';
+      } finally {
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensagem';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+          btn.disabled = false;
+        }, 3000);
+      }
     }
 
     /* ── SMOOTH ACTIVE NAV ───────────────────────────────────────── */
